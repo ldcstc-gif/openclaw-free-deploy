@@ -34,8 +34,15 @@ RUN apt-get update \
       tini curl jq git ca-certificates tzdata awscli \
  && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-# HF runs the container as uid 1000; mirror it to avoid bind-mount perm errors.
-RUN useradd -m -u 1000 -s /bin/bash user \
+# HF runs the container as uid 1000; reuse the node:24 image's pre-existing uid
+# 1000 account (renaming it to "user") instead of creating a new one.
+RUN existing=$(getent passwd 1000 | cut -d: -f1) \
+ && if [ -n "$existing" ] && [ "$existing" != "user" ]; then \
+      usermod -l user -d /home/user -m "$existing" \
+      && groupmod -n user "$existing" 2>/dev/null || true; \
+    elif [ -z "$existing" ]; then \
+      useradd -m -u 1000 -s /bin/bash user; \
+    fi \
  && mkdir -p /home/user/.npm-global /home/user/.openclaw/workspace \
              /home/user/.config/openclaw /data \
  && chown -R user:user /home/user /data
