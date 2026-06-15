@@ -1,0 +1,30 @@
+# .github/dependabot.yml  (#3)
+#
+# Keeps the moving parts current automatically:
+#   * github-actions  → the action versions pinned in our workflows
+#   * docker          → the node:24-bookworm-slim base image in Dockerfile
+#
+# Note: the `openclaw` npm package is pinned via the OPENCLAW_VERSION build arg
+# (default `latest`). Dependabot can't track a build ARG, so to get update PRs
+# for OpenClaw itself, pin a concrete version in Dockerfile and add an `npm`
+# ecosystem entry — or just rely on the weekly build-image.yml rebuild.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies, ci]
+    commit-message:
+      prefix: ci
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels: [dependencies, docker]
+    commit-message:
+      prefix: docker

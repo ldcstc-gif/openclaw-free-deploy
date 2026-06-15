@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 OpenClaw documentation
+    url: https://docs.openclaw.ai
+    about: Questions about OpenClaw itself (channels, models, config) are best answered here.
+  - name: 💬 OpenClaw Discord
+    url: https://discord.gg/clawd
+    about: Community chat for OpenClaw.
+  - name: ❓ Deployment questions
+    url: https://github.com/openclaw/openclaw/discussions
+    about: General how-do-I questions that aren't bugs in this template repo.

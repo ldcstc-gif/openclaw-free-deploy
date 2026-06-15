@@ -1,0 +1,42 @@
+# docker-compose.yml — local test harness  (#6)
+#
+# Run OpenClaw locally before pushing to HF Spaces. This builds the same image
+# HF will build, reads secrets from .env, and maps port 7860 to your machine.
+#
+#   cp .env.example .env      # then fill in TELEGRAM_BOT_TOKEN + a provider key
+#   docker compose up --build
+#
+# Notes:
+#   * Polling mode works locally out of the box (no public URL needed).
+#   * Webhook mode needs a public URL — use `cloudflared tunnel` or ngrok and
+#     set PUBLIC_BASE_URL + TELEGRAM_MODE=webhook in .env.
+#   * The named volume `openclaw_state` persists ~/.openclaw across restarts so
+#     you can test R2-free persistence locally too.
+
+services:
+  openclaw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Pin here for repeatable local builds; bump to test new releases.
+        OPENCLAW_VERSION: latest
+        WITH_OTEL: "0"
+    image: openclaw-free-deploy:local
+    container_name: openclaw-local
+    env_file:
+      - .env
+    environment:
+      # HF uses PORT=7860; mirror it locally.
+      PORT: "7860"
+    ports:
+      - "7860:7860"        # gateway (polling) or webhook listener
+      - "18789:18789"      # gateway Control UI when in webhook mode
+    volumes:
+      - openclaw_state:/home/user/.openclaw
+    restart: unless-stopped
+    # tini is the image ENTRYPOINT; this just makes Ctrl-C clean.
+    stop_grace_period: 30s
+
+volumes:
+  openclaw_state:

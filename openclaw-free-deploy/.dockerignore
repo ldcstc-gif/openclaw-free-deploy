@@ -1,0 +1,22 @@
+# Keep the build context small.
+.git/
+.github/
+.gitignore
+.dockerignore
+.env
+.env.*
+*.md
+LICENSE
+CHANGELOG.md
+VERSION
+tools/
+docker-compose.yml
+Dockerfile.prebuilt
+
+# Cloudflare assets are dev-machine only
+cloudflare/
+
+# Only start.sh belongs in the runtime image
+scripts/deploy.sh
+scripts/deploy-worker.sh
+scripts/set-webhook.sh

@@ -1,0 +1,31 @@
+name: 💡 Feature request
+description: Suggest an improvement (new channel, provider, host, etc.)
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - New channel (Discord/Slack/WhatsApp/…)
+        - New AI provider
+        - New host (Render/Fly.io/Railway/…)
+        - Storage / persistence
+        - Docs / tutorial
+        - CI / automation
+        - Other
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

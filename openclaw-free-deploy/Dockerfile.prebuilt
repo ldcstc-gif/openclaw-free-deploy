@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 ldcstc-gif <https://github.com/ldcstc-gif>
+# Author: ldcstc-gif — original work — https://github.com/ldcstc-gif/openclaw-free-deploy
+#
+# ------------------------------------------------------------------------------
+# Dockerfile.prebuilt — fast-boot variant  (#1)
+#
+# After the build-image.yml workflow has pushed an image to GHCR, you can make
+# HuggingFace Spaces pull that pre-built image instead of building from scratch.
+# Cold-start drops from ~5 min to ~30 s.
+#
+# HOW TO USE:
+#   1. Replace <OWNER> below with your GitHub username/org (lowercase).
+#   2. In your HF Space repo, rename this file to `Dockerfile`
+#      (HF only builds the file literally named `Dockerfile`):
+#        git mv Dockerfile Dockerfile.fullbuild
+#        git mv Dockerfile.prebuilt Dockerfile
+#        git commit -am "use prebuilt GHCR image" && ./scripts/deploy.sh ...
+#
+# The pre-built image already contains start.sh and the correct ENTRYPOINT/CMD,
+# so nothing else is needed here.
+# ------------------------------------------------------------------------------
+FROM ghcr.io/<OWNER>/openclaw-free-deploy:latest

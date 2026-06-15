@@ -1,0 +1,28 @@
+# Secrets — NEVER commit
+.env
+.env.local
+*.key
+*.pem
+.openclaw/.webhook-secret
+
+# Cloudflare/wrangler artifacts
+cloudflare/wrangler.toml
+cloudflare/.wrangler/
+cloudflare/.dev.vars
+
+# Trivy / CI scratch
+trivy-results.sarif
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OpenClaw runtime state (local docker testing)
+.openclaw/
+workspace/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

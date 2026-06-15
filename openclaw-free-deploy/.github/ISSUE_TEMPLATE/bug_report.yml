@@ -1,0 +1,52 @@
+name: 🐛 Bug report
+description: Something isn't working as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a report. Please **redact tokens and keys** from any logs you paste.
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where does it happen?
+      options:
+        - HuggingFace Space (build)
+        - HuggingFace Space (runtime / bot replies)
+        - Cloudflare Worker / custom domain
+        - GitHub Actions (keep-alive / build / lint)
+        - Local docker compose
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Telegram mode
+      options: [polling, webhook, not sure]
+    validations:
+      required: true
+  - type: dropdown
+    id: provider
+    attributes:
+      label: AI provider
+      options: [claude, openai, gemini, deepseek]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you get instead?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: HF build/runtime logs or Worker logs. REDACT secrets.
+      render: shell
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce

@@ -1,0 +1,57 @@
+openclaw-free-deploy
+====================
+
+ORIGINALITY & AUTHORSHIP / 原创与著作权声明
+-------------------------------------------
+
+English
+  This project (the "Work") — its Dockerfiles, shell scripts, the Cloudflare
+  Worker, the GitHub Actions workflows, the cost-estimator tool, and the
+  documentation — is the original work of:
+
+      ldcstc-gif  <https://github.com/ldcstc-gif>
+
+  Canonical (upstream) repository:
+      https://github.com/ldcstc-gif/openclaw-free-deploy
+
+  Copyright (c) 2026 ldcstc-gif and contributors.
+  Licensed under the MIT License — see the LICENSE file.
+
+  Under the MIT License you are free to use, copy, modify, and redistribute
+  this Work, INCLUDING for commercial purposes, on one condition: the above
+  copyright notice and the LICENSE text must be retained in all copies or
+  substantial portions of the Work. Removing or altering the authorship and
+  copyright notices is a breach of the license.
+
+  This Work is integration/deployment "glue" and is NOT affiliated with,
+  endorsed by, or sponsored by OpenClaw, Anthropic, Cloudflare, HuggingFace,
+  Telegram, or any other third party whose products it interoperates with.
+  "OpenClaw" and the lobster mark are trademarks of their respective owners.
+
+中文
+  本项目（含 Dockerfile、Shell 脚本、Cloudflare Worker、GitHub Actions 工作流、
+  成本估算工具及全部文档）为以下作者的原创作品：
+
+      ldcstc-gif  <https://github.com/ldcstc-gif>
+
+  官方（上游）仓库：
+      https://github.com/ldcstc-gif/openclaw-free-deploy
+
+  版权所有 (c) 2026 ldcstc-gif 及贡献者，依 MIT 许可证授权，详见 LICENSE。
+
+  依据 MIT 许可证，你可以自由使用、复制、修改、再分发本作品（含商用），
+  唯一条件是：所有副本或实质性部分都必须保留上述版权声明与 LICENSE 全文。
+  删除或篡改署名与版权声明，即属违反许可证。
+
+  本作品仅为部署/集成"胶水"代码，与 OpenClaw、Anthropic、Cloudflare、
+  HuggingFace、Telegram 等第三方无任何附属、背书或赞助关系；相关名称与
+  商标归各自所有者。
+
+VERIFYING AUTHENTICITY / 验证真伪
+---------------------------------
+  The authoritative way to confirm a copy is genuine is the signed Git history
+  and signed release tags under the canonical repository above. See
+  docs/PROVENANCE.md for how to verify signatures and checksums.
+
+  确认副本是否正宗，请以上述官方仓库中“带签名的 Git 历史”和“签名的发布标签”
+  为准。验证签名与校验和的方法见 docs/PROVENANCE.md。
