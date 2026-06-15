@@ -1,3 +1,14 @@
+---
+title: OpenClaw Free Deploy
+emoji: 🦞
+colorFrom: red
+colorTo: orange
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
 # 🦞 openclaw-free-deploy
 
 <p align="center">
