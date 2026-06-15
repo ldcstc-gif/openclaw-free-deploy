@@ -7,6 +7,7 @@ sdk: docker
 app_port: 7860
 pinned: false
 license: mit
+short_description: "Your own Telegram AI bot, free — HF Spaces + Cloudflare R2"
 ---
 
 # 🦞 openclaw-free-deploy
