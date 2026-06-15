@@ -2,7 +2,7 @@
 title: OpenClaw Free Deploy
 emoji: 🦞
 colorFrom: red
-colorTo: orange
+colorTo: yellow
 sdk: docker
 app_port: 7860
 pinned: false
