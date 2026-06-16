@@ -174,24 +174,6 @@ for i in $(seq 1 90); do
   [ "$i" -eq 90 ] && fail "Gateway did not become healthy within 90s."
 done
 
-# Auto-approve any pending Control UI device pairing requests so browsers
-# can connect without manual shell access. Runs in background, polls every
-# 10s for the first 10 minutes after startup, then exits.
-(
-  END=$(( $(date +%s) + 600 ))
-  while [ "$(date +%s)" -lt "$END" ]; do
-    sleep 10
-    PENDING="$(node "$OPENCLAW" devices list 2>/dev/null \
-      | grep -oE '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' \
-      | head -5 || true)"
-    for DID in $PENDING; do
-      node "$OPENCLAW" devices approve "$DID" 2>/dev/null \
-        && printf '[start %s] Auto-approved Control UI device: %s\n' "$(date -u +%H:%M:%SZ)" "$DID" \
-        || true
-    done
-  done
-) &
-
 # ---------- 5. R2 sync loop + signals ----------------------------------------
 SYNC_PID=""
 if [ "$R2_ENABLED" -eq 1 ]; then
