@@ -98,7 +98,7 @@ else
   node "$OPENCLAW" onboard --non-interactive --mode local \
     --auth-choice "$AUTH_CHOICE" --secret-input-mode ref --accept-risk \
     --gateway-port "$PORT" --gateway-bind loopback \
-    --skip-bootstrap --skip-skills \
+    --skip-bootstrap --skip-skills --skip-health \
     || fail "onboard failed — check the flags against 'openclaw onboard --help' in the official image."
 fi
 
