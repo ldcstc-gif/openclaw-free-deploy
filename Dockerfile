@@ -1,78 +1,48 @@
-# syntax=docker/dockerfile:1.7
+# syntax=docker/dockerfile:1
 #
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2026 ldcstc-gif <https://github.com/ldcstc-gif>
 # Author: ldcstc-gif — original work — https://github.com/ldcstc-gif/openclaw-free-deploy
 #
 # ------------------------------------------------------------------------------
-# OpenClaw multi-channel bot — HuggingFace Spaces Docker image  (v2)
+# HuggingFace Spaces image for OpenClaw.
 #
-# This is the FULL build. For ~30s cold starts after the GHCR workflow has
-# published an image, swap to Dockerfile.prebuilt (see README "Faster boots").
-#
-# Constraints:
-#   * OpenClaw requires Node 24 (recommended) or 22.19+. Node 20 fails.
-#   * HF Spaces exposes ONE port (7860).
-#   * The `openclaw` npm package provides: openclaw-gateway, openclaw-cli, openclaw.
+# Built ON TOP of the OFFICIAL OpenClaw image (so we never reinvent its CLI):
+#   * base provides: WORKDIR /app, USER node (uid 1000), ENTRYPOINT ["tini","-s","--"],
+#     and `node openclaw.mjs <subcommand>`.
+#   * we only add rclone (R2 sync) + jq (config building) and our start.sh,
+#     then override CMD. tini stays PID 1, so signals/zombies are handled.
 # ------------------------------------------------------------------------------
-FROM node:24-bookworm-slim
+FROM ghcr.io/openclaw/openclaw:latest
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    NODE_ENV=production \
-    OPENCLAW_HOME=/home/user/.openclaw \
-    OPENCLAW_CONFIG_DIR=/home/user/.openclaw \
-    OPENCLAW_WORKSPACE_DIR=/home/user/.openclaw/workspace \
-    OPENCLAW_AUTH_PROFILE_SECRET_DIR=/home/user/.config/openclaw \
-    OPENCLAW_DISABLE_BONJOUR=1 \
-    HOME=/home/user \
-    PATH=/home/user/.npm-global/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-# tini=PID1 init; curl=health/keepalive; jq=config writes; git=some skills;
-# awscli=R2 sync; ca-certs+tzdata=TLS + timestamps.
+# --- add the two tools we need (root), then drop back to the node user --------
+USER root
 RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-      tini curl jq git ca-certificates tzdata awscli \
- && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+ && apt-get install -y --no-install-recommends rclone jq ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 
-# HF runs the container as uid 1000; reuse the node:24 image's pre-existing uid
-# 1000 account (renaming it to "user") instead of creating a new one.
-RUN existing=$(getent passwd 1000 | cut -d: -f1) \
- && if [ -n "$existing" ] && [ "$existing" != "user" ]; then \
-      usermod -l user -d /home/user -m "$existing" \
-      && groupmod -n user "$existing" 2>/dev/null || true; \
-    elif [ -z "$existing" ]; then \
-      useradd -m -u 1000 -s /bin/bash user; \
-    fi \
- && mkdir -p /home/user/.npm-global /home/user/.openclaw/workspace \
-             /home/user/.config/openclaw /data \
- && chown -R user:user /home/user /data
+# entrypoint script
+COPY scripts/start.sh /usr/local/bin/openclaw-hf-start.sh
+RUN chmod +x /usr/local/bin/openclaw-hf-start.sh \
+ && mkdir -p /home/node/.openclaw/workspace /home/node/.config/openclaw \
+ && chown -R node:node /home/node/.openclaw /home/node/.config
 
-USER user
-WORKDIR /home/user
+# --- runtime config -----------------------------------------------------------
+ENV OPENCLAW_HOME=/home/node \
+    OPENCLAW_STATE_DIR=/home/node/.openclaw \
+    OPENCLAW_CONFIG_PATH=/home/node/.openclaw/openclaw.json \
+    OPENCLAW_CONFIG_DIR=/home/node/.openclaw \
+    OPENCLAW_WORKSPACE_DIR=/home/node/.openclaw/workspace \
+    OPENCLAW_DISABLE_BONJOUR=1 \
+    PORT=7860
 
-# Pin a version for reproducible builds. Override: --build-arg OPENCLAW_VERSION=2026.x.y
-ARG OPENCLAW_VERSION=latest
-RUN npm config set prefix /home/user/.npm-global \
- && npm install -g openclaw@${OPENCLAW_VERSION} \
- && npm cache clean --force
-
-# #9 (optional) bake the OpenTelemetry diagnostics plugin at build time.
-#   docker build --build-arg WITH_OTEL=1 ...
-ARG WITH_OTEL=0
-RUN if [ "$WITH_OTEL" = "1" ]; then \
-      npm install -g @openclaw/diagnostics-otel || \
-      echo "WARN: diagnostics-otel install failed; install at runtime instead"; \
-    fi
-
-COPY --chown=user:user scripts/start.sh /home/user/start.sh
-RUN chmod +x /home/user/start.sh
-
+USER node
+WORKDIR /app
 EXPOSE 7860
 
-# start.sh writes the gateway's actual port to /tmp/openclaw-health-port so this
-# static healthcheck works in both polling (7860) and webhook (18789) modes.
-HEALTHCHECK --interval=30s --timeout=10s --start-period=150s --retries=3 \
-  CMD curl -fsS "http://127.0.0.1:$(cat /tmp/openclaw-health-port 2>/dev/null || echo 7860)/healthz" || exit 1
+# HF probes the port; this also self-heals a wedged gateway.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||7860)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-ENTRYPOINT ["/usr/bin/tini", "--"]
-CMD ["/home/user/start.sh"]
+# Keep the base image's ENTRYPOINT (tini); only swap the command.
+CMD ["/usr/local/bin/openclaw-hf-start.sh"]
