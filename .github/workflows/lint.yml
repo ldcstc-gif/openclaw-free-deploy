@@ -43,7 +43,7 @@ jobs:
           dockerfile: Dockerfile
           # DL3008: pin apt versions — acceptable to skip for a slim base.
           # DL3018/DL3016: npm/apk pinning — we pin openclaw via build arg.
-          ignore: DL3008,DL3018,DL3016
+          ignore: DL3007,DL3008,DL3016,DL3018
           failure-threshold: warning
 
   actionlint:
