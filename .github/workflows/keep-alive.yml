@@ -1,11 +1,15 @@
 # .github/workflows/keep-alive.yml
 #
-# HF Spaces free tier sleeps after HTTP inactivity. This pings every 25 min to
-# keep it warm. Useful in BOTH modes: in webhook mode it prevents Telegram
-# messages from being dropped during a cold start.
+# Free-tier services (Render, HF Spaces) sleep after HTTP inactivity.
+# This pings every 25 min to keep the service warm so Telegram polling
+# stays active without interruption.
 #
 # Setup: repo Settings → Secrets and variables → Actions → New repository secret
-#        SPACE_URL = https://<your-username>-<space-name>.hf.space
+#   SERVICE_URL = https://<your-service>.onrender.com   (Render)
+#   or
+#   SERVICE_URL = https://<username>-<space-name>.hf.space   (HF Spaces)
+#
+# Legacy: SPACE_URL is also checked for backwards compatibility.
 #
 # GitHub cron is best-effort (can skew up to 15 min at peak); 25 min gives slack.
 
@@ -28,27 +32,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Ping HF Space (/healthz, fall back to /)
+      - name: Ping service (/healthz, fall back to /)
         env:
+          SERVICE_URL: ${{ secrets.SERVICE_URL }}
           SPACE_URL: ${{ secrets.SPACE_URL }}
         run: |
           set -u
-          if [ -z "${SPACE_URL:-}" ]; then
-            echo "::notice::SPACE_URL secret not set — skipping ping."
+          # Prefer SERVICE_URL; fall back to legacy SPACE_URL
+          TARGET="${SERVICE_URL:-${SPACE_URL:-}}"
+          if [ -z "$TARGET" ]; then
+            echo "::notice::Neither SERVICE_URL nor SPACE_URL secret is set — skipping ping."
             exit 0
           fi
-          URL_HEALTH="${SPACE_URL%/}/healthz"
-          URL_ROOT="${SPACE_URL%/}/"
+          URL_HEALTH="${TARGET%/}/healthz"
+          URL_ROOT="${TARGET%/}/"
           code=$(curl -m 30 -sS -o /dev/null -w '%{http_code}' -L -I "$URL_HEALTH" || echo "000")
           echo "HEAD $URL_HEALTH → $code"
           if [ "$code" = "200" ]; then
-            echo "✓ Space awake."
+            echo "✓ Service awake."
           else
             code2=$(curl -m 30 -sS -o /dev/null -w '%{http_code}' -L -I "$URL_ROOT" || echo "000")
             echo "fallback HEAD $URL_ROOT → $code2"
             case "$code2" in
-              200|301|302) echo "✓ Space awake (via /)." ;;
-              *) echo "::warning::Space not healthy (got $code / $code2). May be sleeping or building." ;;
+              200|301|302) echo "✓ Service awake (via /)." ;;
+              *) echo "::warning::Service not healthy (got $code / $code2). May be sleeping or building." ;;
             esac
           fi
           true   # never fail this workflow

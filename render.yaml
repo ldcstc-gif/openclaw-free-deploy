@@ -1,0 +1,55 @@
+#
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 ldcstc-gif <https://github.com/ldcstc-gif>
+#
+# render.yaml — Render.com Infrastructure-as-Code for OpenClaw.
+#
+# Deploy: https://render.com/deploy (connect this GitHub repo)
+# Or: Render dashboard → New Web Service → connect repo → Render detects this file.
+#
+# Free-tier notes:
+#   * Services spin down after 15 min of no HTTP traffic. The keep-alive GitHub
+#     Action (SERVICE_URL secret) prevents that — set it to your .onrender.com URL.
+#   * 512 MB RAM / 0.5 CPU is enough for OpenClaw + polling mode.
+#   * Add S3_* variables to persist state across restarts (Cloudflare R2 is free).
+
+services:
+  - type: web
+    name: openclaw
+    runtime: docker
+    plan: free
+    branch: main
+    healthCheckPath: /healthz
+    envVars:
+      # --- Non-secret defaults (can be overridden in dashboard) ---
+      - key: PORT
+        value: "7860"
+      - key: AI_PROVIDER
+        value: deepseek
+      - key: OPENCLAW_DISABLE_BONJOUR
+        value: "1"
+      - key: S3_BUCKET
+        value: openclaw-state
+      - key: S3_PREFIX
+        value: openclaw
+      - key: S3_REGION
+        value: auto
+      - key: R2_SYNC_INTERVAL
+        value: "300"
+      # --- Secrets: set manually in Render dashboard after first deploy ---
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_ALLOWED_USER_IDS
+        sync: false
+      # Auto-generated on first deploy; rotate from dashboard if needed.
+      - key: OPENCLAW_GATEWAY_TOKEN
+        generateValue: true
+      # --- Optional: Cloudflare R2 for state persistence ---
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
