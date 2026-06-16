@@ -131,7 +131,18 @@ node "$OPENCLAW" config set --batch-json "$TG_BATCH" \
   || fail "telegram config set failed."
 log "Telegram channel configured."
 
-# 3c. Control UI allowed origins: whitelist PUBLIC_BASE_URL so the browser-based
+# 3c. Pre-approve a Control UI device so the browser doesn't prompt for pairing
+#     on every new deployment. Set CONTROL_UI_DEVICE_ID to the UUID shown in
+#     the "Device pairing required" dialog.
+if [ -n "${CONTROL_UI_DEVICE_ID:-}" ]; then
+  if node "$OPENCLAW" devices approve "$CONTROL_UI_DEVICE_ID" 2>/dev/null; then
+    log "Control UI device pre-approved: ${CONTROL_UI_DEVICE_ID}."
+  else
+    log "Control UI device approve skipped (may already be approved)."
+  fi
+fi
+
+# 3d. Control UI allowed origins: whitelist PUBLIC_BASE_URL so the browser-based
 #     UI can connect. Written every boot so URL changes take effect automatically.
 if [ -n "${PUBLIC_BASE_URL:-}" ]; then
   ORIGIN="${PUBLIC_BASE_URL%/}"
