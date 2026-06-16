@@ -128,6 +128,17 @@ node "$OPENCLAW" config set --batch-json "$TG_BATCH" \
   || fail "telegram config set failed."
 log "Telegram channel configured."
 
+# 3c. Control UI allowed origins: whitelist PUBLIC_BASE_URL so the browser-based
+#     UI can connect. Written every boot so URL changes take effect automatically.
+if [ -n "${PUBLIC_BASE_URL:-}" ]; then
+  ORIGIN="${PUBLIC_BASE_URL%/}"
+  ORIGINS_JSON="$(jq -n --arg o "$ORIGIN" '[$o]')"
+  node "$OPENCLAW" config set --batch-json \
+    "[{\"path\":\"gateway.controlUi.allowedOrigins\",\"value\":${ORIGINS_JSON}}]" \
+    && log "Control UI origin whitelisted: ${ORIGIN}." \
+    || log "Control UI origin config failed (non-fatal)."
+fi
+
 # ---------- 4. start the gateway ---------------------------------------------
 log "Starting gateway on 0.0.0.0:${PORT} (--bind lan)…"
 node "$OPENCLAW" gateway --bind lan --port "$PORT" &
