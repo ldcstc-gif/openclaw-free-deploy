@@ -144,14 +144,17 @@ fi
 
 # 3d. Control UI allowed origins: whitelist PUBLIC_BASE_URL so the browser-based
 #     UI can connect. Written every boot so URL changes take effect automatically.
+#     Also trust Render's reverse proxy (127.0.0.1) so WebSocket connections are
+#     treated as local and device-pairing is not required.
 if [ -n "${PUBLIC_BASE_URL:-}" ]; then
   ORIGIN="${PUBLIC_BASE_URL%/}"
   ORIGINS_JSON="$(jq -n --arg o "$ORIGIN" '[$o]')"
   if node "$OPENCLAW" config set --batch-json \
-      "[{\"path\":\"gateway.controlUi.allowedOrigins\",\"value\":${ORIGINS_JSON}}]"; then
-    log "Control UI origin whitelisted: ${ORIGIN}."
+      "[{\"path\":\"gateway.controlUi.allowedOrigins\",\"value\":${ORIGINS_JSON}},
+        {\"path\":\"gateway.trustedProxies\",\"value\":[\"127.0.0.1\",\"::1\"]}]"; then
+    log "Control UI origin whitelisted and proxy trusted: ${ORIGIN}."
   else
-    log "Control UI origin config failed (non-fatal)."
+    log "Control UI origin/proxy config failed (non-fatal)."
   fi
 fi
 
