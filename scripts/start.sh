@@ -73,10 +73,13 @@ if [ -n "${S3_ENDPOINT:-}" ] && [ -n "${S3_ACCESS_KEY:-}" ] && [ -n "${S3_SECRET
   R2_FLAGS=(--exclude ".env" --exclude "workspace/tmp/**" --transfers 8 --checkers 8)
 
   log "R2 enabled ($R2_PATH). Restoring state…"
-  if rclone copy "$R2_PATH" "$OPENCLAW_STATE_DIR" "${R2_FLAGS[@]}" 2>/dev/null; then
+  # Limit restore to 40s so a slow R2 connection can't delay gateway startup
+  # past Render's port-scan window. Non-fatal either way.
+  if timeout 40 rclone copy "$R2_PATH" "$OPENCLAW_STATE_DIR" \
+       "${R2_FLAGS[@]}" --contimeout 10s --timeout 30s 2>/dev/null; then
     log "R2 restore complete."
   else
-    log "R2 restore had no data / non-fatal error (likely first run)."
+    log "R2 restore had no data / timed out / non-fatal error (likely first run)."
   fi
 else
   log "R2 NOT configured — state is EPHEMERAL. Set S3_* secrets to persist."
