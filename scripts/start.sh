@@ -133,10 +133,12 @@ log "Telegram channel configured."
 if [ -n "${PUBLIC_BASE_URL:-}" ]; then
   ORIGIN="${PUBLIC_BASE_URL%/}"
   ORIGINS_JSON="$(jq -n --arg o "$ORIGIN" '[$o]')"
-  node "$OPENCLAW" config set --batch-json \
-    "[{\"path\":\"gateway.controlUi.allowedOrigins\",\"value\":${ORIGINS_JSON}}]" \
-    && log "Control UI origin whitelisted: ${ORIGIN}." \
-    || log "Control UI origin config failed (non-fatal)."
+  if node "$OPENCLAW" config set --batch-json \
+      "[{\"path\":\"gateway.controlUi.allowedOrigins\",\"value\":${ORIGINS_JSON}}]"; then
+    log "Control UI origin whitelisted: ${ORIGIN}."
+  else
+    log "Control UI origin config failed (non-fatal)."
+  fi
 fi
 
 # ---------- 4. start the gateway ---------------------------------------------
