@@ -1,4 +1,3 @@
-# syntax=docker/dockerfile:1
 #
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2026 ldcstc-gif <https://github.com/ldcstc-gif>
