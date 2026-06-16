@@ -46,12 +46,13 @@ jobs:
           fi
           URL_HEALTH="${TARGET%/}/healthz"
           URL_ROOT="${TARGET%/}/"
-          code=$(curl -m 30 -sS -o /dev/null -w '%{http_code}' -L -I "$URL_HEALTH" || echo "000")
+          # Render free tier cold-start can take 50s+; allow generous timeout.
+          code=$(curl -m 90 -sS -o /dev/null -w '%{http_code}' -L -I "$URL_HEALTH" || echo "000")
           echo "HEAD $URL_HEALTH → $code"
           if [ "$code" = "200" ]; then
             echo "✓ Service awake."
           else
-            code2=$(curl -m 30 -sS -o /dev/null -w '%{http_code}' -L -I "$URL_ROOT" || echo "000")
+            code2=$(curl -m 90 -sS -o /dev/null -w '%{http_code}' -L -I "$URL_ROOT" || echo "000")
             echo "fallback HEAD $URL_ROOT → $code2"
             case "$code2" in
               200|301|302) echo "✓ Service awake (via /)." ;;
